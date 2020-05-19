@@ -1,6 +1,40 @@
 [bits 16]
 [org 0x7C00]
 
+xor ax,ax
+mov ds,ax
+mov es,ax
+mov bx,0x7E00
+mov ss,bx
+mov sp,ax
+
+retry:
+mov ah,2
+mov al,2
+mov ch,0
+mov cl,2
+mov dh,0
+int 13h
+
+jnc boot2
+jmp retry
+boot2:
+jmp 0x07E0:0x00
+
+msg2 db 'Password', 0
+msg1 db 'User', 0
+msg db 'Press C to clear the screen', 0
+dabro db 'Success!', 0
+error db 'Incorrect Password :(', 0
+fixedPass db 'everest', 0
+userName:times 15 db 0
+password:times 15 db 0
+TIMES 510 - ($ - $$) db 0
+leng :times 1 db 0
+DW 0xAA55 
+
+; /////////////////////////////////////////////////////////////////
+
 mov di, userName
 mov bp, msg
 call stringPring
@@ -37,10 +71,12 @@ jmp looop
 Print2Screen:
 mov ah, 0
 int 16h
-cmp al, 13
+cmp al, 9
 je newline
 cmp al, 8
 je backspace
+cmp al, 13
+je checkPass
 cmp dl, 45
 je out1
 cmp dh, 14
@@ -50,6 +86,54 @@ jmp out1
 ok:
 call starPrint
 out1:
+ret
+
+stringPrint:
+mov ah, 2
+inc dh
+inc dh
+inc dh
+mov dl, 32
+int 10h
+repeate:
+cmp byte [si], 0
+je exit
+mov al, [si]
+mov ah, 9
+mov cx, 1
+mov bh, 0
+mov bl, 00000010b
+int 10h
+inc si
+mov ah, 2
+inc dl
+int 10h
+jmp repeate
+exit:
+ret
+
+
+checkPass:
+mov di, fixedPass
+mov si, password
+aga:
+mov bl, byte [di]
+cmp bl, byte [si]
+jne faile
+inc si
+inc di
+cmp byte [si], 0
+jne aga
+cmp byte [di], 0
+je succes
+succes:
+mov si, dabro
+call stringPrint
+jmp outy
+faile:
+mov si, error
+call stringPrint
+outy:
 ret
 
 backspace:
@@ -105,14 +189,14 @@ mov di, password
 ret
 
 starPrint:
+mov [di], al
+inc di
 mov cx, 1
 mov ah, 9
 mov al, 2Ah
 mov bh, 0
 mov bl, 01110000b
 int 10h
-mov [di], al
-inc di
 mov ah, 2
 inc dl
 int 10h
@@ -206,7 +290,6 @@ ret
 
 stringPring:
 mov ah, 13h
-; mov bp, msg
 mov al, 1
 mov bh, 0
 mov bl, 00000010b
@@ -260,8 +343,3 @@ mov bl, 01110000b
 int 10h
 ret
 
-msg2 db 'Password', 0
-msg1 db 'User', 0
-msg db 'Press C to clear the screen', 0
-userName:times 15 db 0
-password:times 15 db 0
