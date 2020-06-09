@@ -1,11 +1,11 @@
 [bits 16]
 [org 0x7C00]
 
-mov di, msg
+mov di, msgg
 call StringPrint
 mov si, string
 looop:
-call Print2Screen
+call Print2Screen1
 jmp looop
 
 StringPrint:
@@ -25,13 +25,13 @@ mov bh, 0
 int 10h
 ret
 
-Print2Screen:
+Print2Screen1:
 mov ah, 0
 int 16h
 cmp al, 13
-je newline
+je newlinee
 cmp al, 8
-je backspace
+je backspacee
 cmp si, 256+string
 jz outOfhere
 call CharPrint2
@@ -46,7 +46,7 @@ mov [si], al
 inc si
 ret
 
-newline:
+newlinee:
 mov si, string
 mov al, 0xA
 mov ah, 0x0E
@@ -55,7 +55,7 @@ mov al, 0xD
 mov ah, 0x0E
 int 10h
 cmp word [si], 0
-je there
+je there2
 call printbuffer
 mov al, 0xA
 mov ah, 0x0E
@@ -69,20 +69,20 @@ int 10h
 mov al, 0xD
 mov ah, 0x0E
 int 10h
-there:
+there2:
 call clearBuffer
-mov di, msg  
+mov di, msgg  
 call StringPrint
 ret
 
 printbuffer:
-repet:
+repet1:
 cmp word [si], 0
 je ex
 mov al, [si]
 inc si
 call CharPrint3
-jmp repet
+jmp repet1
 ex:
 ret
 
@@ -91,24 +91,24 @@ clearBuffer:
 mov si, string
 again:
 cmp word [si], 0
-je exit
+je exit1
 mov word [si], 0
 inc si
 jmp again
-exit:
+exit1:
 mov si, string
 ret
 
-backspace:
+backspacee:
 cmp word [string], 0
 jz outt
 mov ah, 3
 int 10h
 cmp dl,0
-jne here
+jne here11
 dec dh
 mov dl,80
-here:
+here11:
 cmp dl,0
 je there1
 dec dl
@@ -129,5 +129,5 @@ ret
 
 count: times 1 db 0
 string: times 256 db 0
-msg db 'Dodi:~$ ', 0
+msgg db 'Dodi:~$ ', 0
 

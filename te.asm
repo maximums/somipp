@@ -4,7 +4,7 @@
 
 SECTION .data
 
-string: db 'misanea> ',0
+string: db 'criss> ',0
 len: equ $ - string  
 buffer: times 256 db 0
 

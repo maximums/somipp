@@ -1,0 +1,1 @@
+nasm -f bin hell.asm -o hell.bin

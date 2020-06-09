@@ -1,6 +1,6 @@
+; /////////////////////////////// 512 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 [bits 16]
 [org 0x7C00]
-
 xor ax,ax
 mov ds,ax
 mov es,ax
@@ -26,15 +26,14 @@ msg1 db 'User', 0
 msg db 'Press C to clear the screen', 0
 dabro db 'Success!', 0
 error db 'Incorrect Password :(', 0
-fixedPass db 'everest', 0
+fixedPass db 'everest8849', 0
 userName:times 15 db 0
 password:times 15 db 0
 TIMES 510 - ($ - $$) db 0
 leng :times 1 db 0
 DW 0xAA55 
 
-; /////////////////////////////////////////////////////////////////
-
+; ////////////////////// OUT ///////////////////////////////////////////
 mov di, userName
 mov bp, msg
 call stringPring
@@ -127,12 +126,15 @@ jne aga
 cmp byte [di], 0
 je succes
 succes:
-mov si, dabro
-call stringPrint
+jmp prompt
 jmp outy
 faile:
 mov si, error
+push dx
 call stringPrint
+mov ah, 2
+pop dx
+int 10h
 outy:
 ret
 
@@ -177,15 +179,22 @@ outt:
 ret
 
 newline:
-mov [si], dx
-mov ah, 3
-mov bh, 0
-int 10h
+cmp dh, 14
+je name
+pass:
 mov ah, 2
 mov dl, 32
 mov dh, 14
 int 10h
 mov di, password
+jmp tt
+name:
+mov ah, 2
+mov dl, 32
+mov dh, 10
+int 10h
+mov di, userName
+tt:
 ret
 
 starPrint:
@@ -343,3 +352,166 @@ mov bl, 01110000b
 int 10h
 ret
 
+; /////////////////////////////////////////////////////////////////
+
+prompt:
+call cls
+mov di, msgg
+call StringPrint
+mov si, string
+looop1:
+call Print2Screen1
+jmp looop1
+
+cls:
+mov al, 3
+mov ah, 0
+int 10h
+ret
+
+StringPrint:
+ag1:
+mov al, [di]
+inc di
+or al, al
+jz outOf3
+call CharPrint3
+jmp ag1
+outOf3:
+ret
+
+CharPrint3:
+mov ah, 0x0E
+mov bh, 0
+int 10h
+ret
+
+Print2Screen1:
+mov ah, 0
+int 16h
+cmp al, 13
+je newlinee
+cmp al, 8
+je backspacee
+cmp si, 128+string
+jz outOfhere
+call CharPrint2
+outOfhere:
+ret
+
+CharPrint2:
+mov ah, 0x0E
+mov bh, 0
+int 10h
+mov [si], al
+inc si
+ret
+
+newlinee:
+mov si, string
+mov al, 0xA
+mov ah, 0x0E
+int 10h
+mov al, 0xD
+mov ah, 0x0E
+int 10h
+cmp word [si], 0
+je there2
+call printbuffer
+mov al, 0xA
+mov ah, 0x0E
+int 10h
+mov al, 0xD
+mov ah, 0x0E
+int 10h
+mov al, 0xA
+mov ah, 0x0E
+int 10h
+mov al, 0xD
+mov ah, 0x0E
+int 10h
+there2:
+call clearBuffer
+mov di, msgg  
+call StringPrint
+ret
+
+printbuffer:
+repet11:
+cmp word [si], 0
+je ex
+mov al, [si]
+inc si
+call CharPrint3
+jmp repet11
+ex:
+ret
+
+clearBuffer:
+mov si, string
+again:
+cmp word [si], 0
+je exit1
+mov word [si], 0
+inc si
+jmp again
+exit1:
+mov si, string
+ret
+
+backspacee:
+cmp word [string], 0
+jz outt1
+mov ah, 3
+int 10h
+cmp dl,0
+jne here11
+dec dh
+mov dl,80
+here11:
+cmp dl,0
+je there1
+dec dl
+there1:
+mov ah, 2
+int 10h
+mov al, 20h
+mov ah, 9
+mov bl, 7
+int 10h
+dec si
+mov word [si], 0
+outt1:
+ret
+
+; mov di, fixedPass
+; mov si, password
+checkComm:
+aga11:
+mov bl, byte [di]
+cmp bl, byte [si]
+jne faile11
+inc si
+inc di
+cmp byte [si], 0
+jne aga11
+cmp byte [di], 0
+je succes11
+succes11:
+; Execute commands
+jmp outy
+faile:
+mov di, err
+; push dx
+call StringPrint
+; mov ah, 2
+; pop dx
+; int 10h
+outy:
+ret
+
+string: times 128 db 0
+msgg db 'Dodi:~$ ', 0
+cleaaaar db 'cls ', 0
+err db 'Unknown command', 0
+write db 'w2s ', 0

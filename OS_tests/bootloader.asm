@@ -8,12 +8,12 @@ section .multiboot               ;according to multiboot spec
 
 section .text
 global start
-extern test1                     ;defined in the C file
+extern main                      ;defined in the C file
 
 start:
         cli                      ;block interrupts
         mov esp, stack_space     ;set stack pointer
-        call test1
+        call main
         hlt                      ;halt the CPU
 
 section .bss
